@@ -50,8 +50,8 @@ class TransformParams:
     """
 
     transform: Affine
-    width: Union[int, None]
-    height: Union[int, None]
+    width: int
+    height: int
     crs: str
     bands: List[int]
 
@@ -142,14 +142,20 @@ def create_TransformParams(
     >>> create_TransformParams(rio.open("./geo.tif", "EPSG:4326")
     """
     # NOTE: Add type checking
+    trans = calculate_default_transform(
+        src.crs,
+        output_crs,
+        src.width,
+        src.height,
+        *src.bounds,
+    )
+    assert isinstance(trans[2], int) and isinstance(
+        trans[1], int
+    ), f"Invalid width and height (f{trans[1]}, {trans[2]})"
     return TransformParams(
-        *calculate_default_transform(
-            src.crs,
-            output_crs,
-            src.width,
-            src.height,
-            *src.bounds,
-        ),
+        trans[0],
+        trans[1],
+        trans[2],
         output_crs,
         list(range(1, src.count + 1)),
     )
