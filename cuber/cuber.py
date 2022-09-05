@@ -1,13 +1,8 @@
-from pathlib import Path, PosixPath
-import json
-from dataclasses import dataclass
-from typing import Any, List, Tuple, Union
-
+from typing import Any, List, Union
 import numpy as np
 
 import rasterio as rio
-from rasterio.features import bounds
-from rasterio.warp import reproject, calculate_default_transform, Affine
+from rasterio.warp import reproject
 
 if __package__:
     from .bbox import Bbox, create_Bbox
@@ -106,14 +101,11 @@ def cube(src, crs, bbox) -> np.ndarray:
         base_item = src[0]
         opened = True
 
-    # base_item = rio.open(src[0]) if isinstance(list_type, (str, PosixPath)) else src[0]
-
     trans = create_TransformParams(base_item, crs)
     arr_slice = trans.slice(bbox.upper_left, bbox.lower_right)
     height = abs(arr_slice[0][0] - arr_slice[1][0])
     weight = abs(arr_slice[0][1] - arr_slice[1][1])
     data_cube = np.zeros((base_item.count, height, weight, len(src)))
-    outputs = []
     for idx, i in enumerate(src):
         print(i)
         if not opened:
@@ -121,6 +113,5 @@ def cube(src, crs, bbox) -> np.ndarray:
         data_cube[..., idx] = align_src(i, trans)[
             :, arr_slice[0][0] : arr_slice[1][0], arr_slice[0][1] : arr_slice[1][1]
         ]
-        # outputs.append(out)
 
     return data_cube
