@@ -5,11 +5,12 @@ import rasterio as rio
 from rasterio.warp import reproject
 
 if __package__:
-    from .bbox import Bbox, create_Bbox
+    from .bbox import BBox, create_BBox
     from .transform import TransformParams, create_TransformParams
 else:
-    from bbox import Bbox, create_Bbox
+    from bbox import BBox, create_BBox
     from transform import TransformParams, create_TransformParams
+    from tile import TileCube, create_TileCube
 
 
 # from pyproj import Transformer
@@ -66,7 +67,7 @@ def homogeneous_type(seq: List[Any]) -> Union[type, bool]:
     return first_type if all(isinstance(x, first_type) for x in iseq) else False
 
 
-def cube(src, crs, bbox) -> np.ndarray:
+def cube(uri, src, crs, bbox, dates, *, create=False):
     """cube vector of rasterio objects
 
     Parameters
@@ -102,15 +103,30 @@ def cube(src, crs, bbox) -> np.ndarray:
         opened = True
 
     trans = create_TransformParams(base_item, crs)
-    arr_slice = trans.slice(bbox.upper_left, bbox.lower_right)
-    height = abs(arr_slice[0][0] - arr_slice[1][0])
-    width = abs(arr_slice[0][1] - arr_slice[1][1])
-    data_cube = np.zeros((base_item.count, height, width, len(src)))
+    # arr_slice = trans.slice(bbox.upper_left, bbox.lower_right)
+    # height = abs(arr_slice[0][0] - arr_slice[1][0])
+    # width = abs(arr_slice[0][1] - arr_slice[1][1])
+    # data_cube = np.zeros((base_item.count, height, width, len(src)))
+
+    tilecube = create_TileCube(
+        uri=uri,
+        attr="val",
+        bands=list(range(1, base_item.count + 1)),
+        dates=dates,
+        bbox=bbox,
+        transparams=trans,
+        create=create,
+    )
+
+    return tilecube
+
+    """
     for idx, i in enumerate(src):
         if not opened:
             i = rio.open(i)
         data_cube[..., idx] = align_src(i, trans)[
             :, arr_slice[0][0] : arr_slice[1][0], arr_slice[0][1] : arr_slice[1][1]
         ]
+    """
 
-    return data_cube
+    # return data_cube
