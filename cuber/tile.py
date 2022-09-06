@@ -78,6 +78,7 @@ class TileCube:
     dates: List[datetime]
     crs: str
     bbox: BBox
+    arr_slice: List[Tuple[int, int]]
 
     @property
     def shape(self) -> Tuple[int, ...]:
@@ -95,13 +96,18 @@ class TileCube:
 
         # See notes for ArrayLike
         arraylike = ArrayLike(shape=self.shape)
-        tiledb.empty_like(str(self.uri), arraylike)
+        td = tiledb.empty_like(str(self.uri), arraylike)
         # tiledb.empty_like(str(self.uri), self.shape)
-        with tiledb.open(str(self.uri), "w") as ARR:
-            ARR.meta["crs"] = self.crs
-            ARR.meta["upper_left"] = self.bbox.upper_left
-            ARR.meta["lower_right"] = self.bbox.lower_right
-            # ARR.meta["dates"] = [d.strftime("%Y-%m-%d") for d in self.dates]
+        # with tiledb.open(str(self.uri), "w") as ARR:
+        #    ARR.meta["crs"] = self.crs
+        #    ARR.meta["upper_left"] = self.bbox.upper_left
+        #    ARR.meta["lower_right"] = self.bbox.lower_right
+        #    # ARR.meta["dates"] = [d.strftime("%Y-%m-%d") for d in self.dates]
+        td.meta["crs"] = self.crs
+        td.meta["upper_left"] = self.bbox.upper_left
+        td.meta["lower_right"] = self.bbox.lower_right
+
+        self.db = td
 
 
 def create_TileCube(
@@ -152,6 +158,7 @@ def create_TileCube(
         dates=dates,
         crs=transparams.crs,
         bbox=bbox,
+        arr_slice=arr_slice,
     )
     if create:
         tilecube.create(overwrite=overwrite)

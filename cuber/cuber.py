@@ -7,6 +7,7 @@ from rasterio.warp import reproject
 if __package__:
     from .bbox import BBox, create_BBox
     from .transform import TransformParams, create_TransformParams
+    from .tile import TileCube, create_TileCube
 else:
     from bbox import BBox, create_BBox
     from transform import TransformParams, create_TransformParams
@@ -67,7 +68,7 @@ def homogeneous_type(seq: List[Any]) -> Union[type, bool]:
     return first_type if all(isinstance(x, first_type) for x in iseq) else False
 
 
-def cube(uri, src, crs, bbox, dates, *, create=False):
+def cube(uri, src, crs, bbox, dates, *, create=True) -> TileCube:
     """cube vector of rasterio objects
 
     Parameters
@@ -117,16 +118,15 @@ def cube(uri, src, crs, bbox, dates, *, create=False):
         transparams=trans,
         create=create,
     )
+    arr_slice = tilecube.arr_slice
 
-    return tilecube
-
-    """
     for idx, i in enumerate(src):
         if not opened:
             i = rio.open(i)
-        data_cube[..., idx] = align_src(i, trans)[
+        # NOTES:
+        #   This method is currently really slow, need to take advantage of parallel writes
+        tilecube.db[..., idx] = align_src(i, trans)[
             :, arr_slice[0][0] : arr_slice[1][0], arr_slice[0][1] : arr_slice[1][1]
         ]
-    """
-
     # return data_cube
+    return tilecube
