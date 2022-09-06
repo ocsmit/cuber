@@ -7,7 +7,7 @@ from rasterio.features import bounds
 
 
 @dataclass
-class Bbox:
+class BBox:
     """Struct for bounding box
 
     Parameters
@@ -67,7 +67,7 @@ class Bbox:
         self.lower_right = [self.bottom, self.right]
 
 
-def create_Bbox(geojson_path: Path, crs: str = "EPSG:4326") -> Bbox:
+def create_BBox(geojson_path: Path, crs: str = "EPSG:4326") -> BBox:
     """create Bbox struct from geojson on disk
 
     Parameters
@@ -94,4 +94,4 @@ def create_Bbox(geojson_path: Path, crs: str = "EPSG:4326") -> Bbox:
     geom = geojson["features"][0]["geometry"]
     assert geom != None
 
-    return Bbox(*bounds(geom), crs=crs)
+    return BBox(*bounds(geom), crs=crs)
