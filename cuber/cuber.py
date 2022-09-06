@@ -104,10 +104,9 @@ def cube(src, crs, bbox) -> np.ndarray:
     trans = create_TransformParams(base_item, crs)
     arr_slice = trans.slice(bbox.upper_left, bbox.lower_right)
     height = abs(arr_slice[0][0] - arr_slice[1][0])
-    weight = abs(arr_slice[0][1] - arr_slice[1][1])
-    data_cube = np.zeros((base_item.count, height, weight, len(src)))
+    width = abs(arr_slice[0][1] - arr_slice[1][1])
+    data_cube = np.zeros((base_item.count, height, width, len(src)))
     for idx, i in enumerate(src):
-        print(i)
         if not opened:
             i = rio.open(i)
         data_cube[..., idx] = align_src(i, trans)[
